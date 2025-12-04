@@ -86,7 +86,7 @@ Website ini dirancang untuk memberikan kemudahan akses bagi pengguna dalam melak
     • password: 22
 
     - 👤 Login User
-    • username: farih
+    • username: pasien
     • password: 22
 
 
