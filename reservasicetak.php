@@ -16,9 +16,20 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
+// --- FUNGSI FORMAT TANGGAL INDONESIA ---
+function tgl_indo($tanggal){
+    $bulan = array (
+        1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    );
+    $pecahkan = explode('-', date('Y-m-d', strtotime($tanggal)));
+    return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
+}
+// ----------------------------------------
+
 // Query cetak data invoice reservasi per-ID
 $query = mysqli_query($koneksi, "
-    SELECT r.*, p.username, p.no_telpon, d.nama_dokter, d.spesialisasi
+    SELECT r.*, p.username, p.no_telpon, p.email, d.nama_dokter, d.spesialisasi
     FROM reservasi r
     JOIN pengguna p ON r.id_pengguna = p.id_pengguna
     JOIN dokter d ON r.dokter_id = d.dokter_id
@@ -31,116 +42,143 @@ if (!$data) {
     echo "Data reservasi tidak ditemukan!";
     exit;
 }
+
+// --- LOGIKA CEGAH CETAK JIKA TIDAK BERHASIL ---
+if ($data['status'] == 'menunggu dikonfirmasi') {
+    echo "<script>
+            alert('Invoice belum dapat dicetak karena status reservasi masih Menunggu Konfirmasi.');
+            window.close(); 
+            window.history.back();
+          </script>";
+    exit;
+} else if ($data['status'] == 'reservasi dibatalkan') {
+    echo "<script>
+            alert('Tidak dapat mencetak invoice untuk reservasi yang dibatalkan.');
+            window.close();
+            window.history.back();
+          </script>";
+    exit;
+}
+
+// Link kembali (bisa disesuaikan jika admin atau pasien)
+$link_kembali = isset($_SESSION['role']) && $_SESSION['role'] == 'admin' ? 'keloladatareservasi.php' : 'reservasi.php';
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Invoice Reservasi - HalloFii</title>
-
-    <!-- Bootstrap -->
+    <meta charset="UTF-8">
+    <title>Tiket Reservasi #<?= $id ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { font-family: Arial, sans-serif; padding: 30px; }
-        .invoice-box {
-            border: 2px solid #ddd;
-            padding: 20px;
-            border-radius: 10px;
-            width: 70%;
-            margin: auto;
+        body { background: #eee; font-family: 'Courier New', monospace; }
+        .ticket-card {
+            background: white; width: 100%; max-width: 400px; margin: 30px auto;
+            padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 5px solid #0d6efd;
         }
-        .title-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .title-header h2 { margin: 0; font-weight: bold; }
-        .title-header p { margin:0; }
-        .info-table td { padding: 5px 0; font-size: 15px; }
+        .dashed-line { border-top: 2px dashed #bbb; margin: 15px 0; }
+        .total-row { font-size: 1.2rem; font-weight: bold; }
+        .details-label { color: #666; font-size: 0.9rem; }
+        .details-value { font-weight: bold; }
+        
+        .action-buttons { text-align: center; margin-top: 20px; }
+        .btn-print { background: #0d6efd; color: white; border: none; padding: 10px 20px; border-radius: 5px; }
+        .btn-back { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; }
+        
         @media print {
-            .no-print { display:none; }
-            body { padding: 0; }
-            .invoice-box { border: none; width: 100%; }
+            body { background: white; }
+            .no-print { display: none; }
+            .ticket-card { box-shadow: none; border: 1px solid #000; margin: 0; }
         }
     </style>
 </head>
-
 <body>
 
-<div class="invoice-box">
-
-    <div class="title-header">
-        <h2>KLINIK HalloFii</h2>
-        <p>Jl. Jambi – Muara Bulian, Mendalo Darat, Jambi</p>
-        <p>Telp: +62 822-4305-4197</p>
-        <hr>
-        <h3>INVOICE RESERVASI</h3>
+<div class="ticket-card">
+    <div class="text-center mb-4">
+        <h4 class="fw-bold m-0">HALLOFII KLINIK</h4>
+        <small>Jl. Mendalo No. 123, Muaro Jambi</small>
     </div>
 
-    <!-- DATA INVOICE -->
-    <table class="table info-table">
-        <tr>
-            <td><strong>ID Reservasi</strong></td>
-            <td>: <?= $data['reservasi_id'] ?></td>
-        </tr>
-        <tr>
-            <td><strong>Nama Pasien</strong></td>
-            <td>: <?= $data['username'] ?></td>
-        </tr>
-        <tr>
-            <td><strong>No Telpon</strong></td>
-            <td>: <?= $data['no_telpon'] ?></td>
-        </tr>
-        <tr>
-            <td><strong>Dokter</strong></td>
-            <td>: <?= $data['nama_dokter'] ?> (<?= $data['spesialisasi'] ?>)</td>
-        </tr>
-        <tr>
-            <td><strong>Layanan & Spesialisasi</strong></td>
-            <td>: <?= $data['layanan_spesialis'] ?></td>
-        </tr>
-        <tr>
-            <td><strong>Tanggal & Waktu</strong></td>
-            <td>: <?= $data['tanggal_waktu'] ?></td>
-        </tr>
-        <tr>
-            <td><strong>Status</strong></td>
-            <td>:
-                <?php if ($data['status'] == "menunggu dikonfirmasi") { ?>
-                    <span class="badge bg-warning text-dark">Menunggu Dikonfirmasi</span>
-                <?php } elseif ($data['status'] == "reservasi berhasil") { ?>
-                    <span class="badge bg-success">Reservasi Berhasil</span>
-                <?php } else { ?>
-                    <span class="badge bg-danger">Reservasi Dibatalkan</span>
-                <?php } ?>
-            </td>
-        </tr>
-    </table>
+    <div class="dashed-line"></div>
 
-    <br>
-
-    <p><strong>Keterangan:</strong> Invoice ini digunakan untuk keperluan Check-in di Klinik HalloFii.</p>
-
-    <hr>
-
-    <!-- FOOTER -->
-    <div class="text-center">
-        <p>Terima kasih telah menggunakan layanan reservasi HalloFii.</p>
-        <p><i>Semoga lekas membaik 🙏</i></p>
+    <div class="row">
+        <div class="col-6"><small>No. Tiket:</small><br><strong>#RSV-<?= $data['reservasi_id'] ?></strong></div>
+        <div class="col-6 text-end"><small>Tanggal Cetak:</small><br><strong><?= date('d/m/Y') ?></strong></div>
     </div>
 
+    <div class="mt-3">
+        <small>Pasien:</small><br><strong><?= strtoupper($data['username']) ?></strong>
+    </div>
+
+    <div class="dashed-line"></div>
+
+    <div class="mb-2">
+        <strong><?= $data['nama_dokter'] ?></strong><br>
+        <small class="text-muted"><?= $data['spesialisasi'] ?></small>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-6">
+            <small>Tanggal Reservasi:</small><br>
+            <strong><?= tgl_indo($data['tanggal_waktu']) ?></strong>
+        </div>
+        <div class="col-6 text-end">
+            <small>Waktu / Pukul:</small><br>
+            <strong><?= date('H:i', strtotime($data['tanggal_waktu'])) ?> WIB</strong>
+        </div>
+    </div>
+
+    <div class="mb-2 mt-3">
+        <small>Layanan/Keluhan:</small><br><span><?= $data['layanan_spesialis'] ?></span>
+    </div>
+
+    <div class="dashed-line"></div>
+
+    <div class="d-flex justify-content-between total-row">
+        <span>TOTAL TAGIHAN</span>
+        <span>Rp <?= number_format($data['total_biaya'], 0, ',', '.') ?></span>
+    </div>
+    
+    <div class="text-center mt-3 p-2 bg-light border">
+        <small class="fw-bold">METODE PEMBAYARAN:</small><br>
+        BAYAR DI KASIR (CHECK-IN)
+    </div>
+
+    <div class="mt-4">
+        <table class="w-100" style="font-size: 0.85rem;">
+            <tr>
+                <td class="details-label">ID Transaksi Sistem</td>
+                <td class="details-value text-end">RSV-<?= $data['reservasi_id'] ?>-<?= date('Y') ?></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="alert alert-info mt-4 d-flex align-items-center p-2" role="alert" style="font-size: 0.85rem;">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            <strong>Penting:</strong> Tunjukkan tiket ini kepada resepsionis saat melakukan Check-In.
+        </div>
+    </div>
+
+    <div class="text-center mt-4 mb-2">
+        <small class="text-muted">Terima kasih telah mempercayakan kesehatan Anda kepada HalloFii.</small>
+    </div>
 </div>
 
-<!-- TOMBOL -->
-<div class="text-center mt-4 no-print">
-    <a href="javascript:history.back()" class="btn btn-secondary">Kembali</a>
-    <button onclick="window.print()" class="btn btn-primary">Print Invoice</button>
+<div class="action-buttons no-print">
+    <a href="<?= $link_kembali; ?>" class="btn btn-back text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+    <button onclick="window.print()" class="btn btn-print">
+        <i class="bi bi-printer-fill me-2"></i> Cetak Tiket
+    </button>
 </div>
 
 <script>
-    window.onload = () => {
-        window.print();
-    };
+    // Opsional: Langsung print saat dibuka
+    // window.onload = () => { window.print(); }
 </script>
 
 </body>

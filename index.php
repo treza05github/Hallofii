@@ -1,176 +1,99 @@
 <?php
 include "koneksi.php";
-
-// Ambil semua data dokter
-$dokterQuery = mysqli_query($koneksi, "SELECT * FROM dokter ORDER BY dokter_id DESC");
+$dokterQuery = mysqli_query($koneksi, "SELECT * FROM dokter ORDER BY dokter_id DESC LIMIT 3");
 ?>
 
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HalloFii</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="styles.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HalloFii - Layanan Kesehatan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .hero { padding: 100px 0; background: linear-gradient(to right, #f8f9fa, #eef2f3); }
+        .feature-box { padding: 30px; border-radius: 20px; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: 100%; transition: 0.3s; }
+        .feature-box:hover { transform: translateY(-5px); }
+        .doctor-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; }
+        footer { background: #0f172a; color: white; padding: 50px 0 20px; }
+    </style>
 </head>
-
 <body>
-  <header>
-    <a href="#" class="logo"><span>H</span>allo <span>F</span>ii</a>
-    <nav class="navbar">
-      <ul>
-        <li><a href="#home">Beranda</a></li>
-        <li><a href="#about">Tentang</a></li>
-        <li><a href="#doctor">Dokter</a></li>
-        <!-- <li><a href="#review">Review</a></li> -->
-        <li><a href="#contact">Kontak</a></li>
-        <!--<li><a href="#blog">Blog</a></li> -->
-        <li><a href="login.php"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="blue"
-              class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-              <path fill-rule="evenodd"
-                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
-              <path fill-rule="evenodd"
-                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
-            </svg></a></li>
 
-      </ul>
-    </nav>
-    <div class="fas fa-bars"></div>
-  </header>
-
-  <section id="home" class="home">
-    <div class="row">
-      <div class="images">
-        <img src="https://raw.githubusercontent.com/farazc60/Project-Images/main/hospital/assets/home.png"
-          alt="">
-      </div>
-      <div class="content">
-        <h1><span>Stay</span> Safe, <span>Stay</span> Healthy.</h1>
-        <p>Memberikan layanan terbaik, aman, berkualitas dan inovatif</p>
-        <!--<a href="login.html"><button class="button">Akses Layanan</button></a>-->
-      </div>
-    </div>
-  </section>
-
-  <section id="about" class="about">
-    <h1 class="heading">Tentang Layanan Kami</h1>
-    <h1 class="title">jelajahi layanan hallofii</h1>
-    <div class="box-container">
-      <!--<div class="box">
-                <div class="images">
-                    <img src="https://raw.githubusercontent.com/farazc60/Project-Images/main/hospital/assets/about-1.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>ambulance services</h3>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi consequuntur, repellendus aliquid alias unde quibusdam illo itaque quo tempora voluptates.</p>
-                    <a href="#"><button class="button">Learn more</button></a>
-                </div>
-            </div> -->
-      <div class="box">
-        <div class="images">
-          <img src="https://as2.ftcdn.net/jpg/03/10/61/35/1000_F_310613509_LBdr3kwuo3UkYMy82OLBXyKiWbxhbBVm.jpg"
-            alt="">
-        </div>
-        <div class="content">
-          <h3>Layanan Reservasi</h3>
-          <p>HalloFii menyediakan sistem reservasi online yang memudahkan pasien untuk memesan jadwal konsultasi
-            dengan dokter umum maupun spesialis tanpa perlu antri. Proses reservasi dapat dilakukan kapan saja
-            melalui website atau aplikasi HalloFii.</p>
-          <a href="#"><button class="button">Akses Layanan</button></a>
-        </div>
-      </div>
-      
-    </div>
-  </section>
-
-
-  <section id="doctor" class="card">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm fixed-top py-3">
     <div class="container">
-      <h1 class="heading">Dokter</h1>
-      <h3 class="title">Dokter Profesional Kami</h3>
-
-      <div class="box-container">
-
-        <?php while ($d = mysqli_fetch_assoc($dokterQuery)) { ?>
-          <div class="box">
-
-            <!-- FOTO DOKTER -->
-            <?php if ($d['foto_dokter'] != NULL) { ?>
-              <img src="data:image/jpeg;base64,<?= base64_encode($d['foto_dokter']); ?>" alt="">
-            <?php } else { ?>
-              <img src="noimage.png" alt="">
-            <?php } ?>
-
-            <div class="content">
-              <a href="#">
-                <h2><?= $d['nama_dokter']; ?></h2>
-              </a>
-
-              <p><?= $d['spesialisasi']; ?></p>
-
-              <div class="icons">
-                <a href="login.php"><button class="button">Konsultasi</button></a>
-              </div>
-            </div>
-          </div>
-        <?php } ?>
-
-      </div>
-    </div>
-  </section>
-
-
-  <section id="contact" class="contact">
-    <h1 class="heading">Kontak Kami</h1>
-    <h3 class="title">Terhubung dengan HalloFii</h3>
-    <div class="row">
-      <div class="contact-info">
-        <div class="contact-box">
-          <p>
-            HalloFii adalah klinik modern yang menghadirkan layanan kesehatan terpadu dan konsultasi medis berbasis digital.
-            Kami berkomitmen memberikan pelayanan cepat, profesional, dan ramah untuk seluruh pasien di Indonesia.
-          </p>
-          <div class="icon-info">
-            <p><i class="fa-solid fa-phone"></i> +62 822-4305-4197</p>
-            <p><i class="fa-solid fa-envelope"></i> support@hallofii.com</p>
-            <p><i class="fa-solid fa-location-dot"></i>
-              Jl. Jambi – Muara Bulian, Mendalo Darat, Jambi
-            </p>
-          </div>
+        <a class="navbar-brand fw-bold text-primary fs-4" href="#">HalloFii</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link text-dark mx-2" href="#home">Beranda</a></li>
+                <li class="nav-item"><a class="nav-link text-dark mx-2" href="#about">Tentang</a></li>
+                <li class="nav-item"><a class="nav-link text-dark mx-2" href="#doctor">Dokter</a></li>
+                <li class="nav-item ms-3"><a href="login.php" class="btn btn-primary rounded-pill px-4">Masuk</a></li>
+            </ul>
         </div>
-      </div>
-
-      <div class="maps">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.250667271508!2d103.51256407472506!3d-1.6062023983788338!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e2f62e9532a459f%3A0x8fb8ad56bcd9b215!2sJl.%20Jambi%20-%20Muara%20Bulian%2C%20Mendalo%20Darat%2C%20Kec.%20Jambi%20Luar%20Kota%2C%20Kabupaten%20Muaro%20Jambi%2C%20Jambi%2036657!5e0!3m2!1sid!2sid!4v1759594645435!5m2!1sid!2sid"
-          width="500" height="350" style="border:0;" allowfullscreen="" loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"></iframe>
-      </div>
     </div>
-  </section>
+</nav>
 
-
-  <section class="footer">
-    <div class="box">
-      <h2 class="logo"><span>H</span>allo <span>F</span>ii</h2>
+<section id="home" class="hero d-flex align-items-center">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-dark mb-3">Solusi Kesehatan <span class="text-primary">Terpercaya.</span></h1>
+                <p class="lead text-muted mb-4">Layanan reservasi dokter yang mudah, cepat, dan aman untuk keluarga Anda.</p>
+                <a href="login.php" class="btn btn-primary btn-lg rounded-pill px-5 shadow">Mulai Sekarang</a>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block text-center">
+                <img src="https://img.freepik.com/free-vector/health-professional-team-concept-illustration_114360-1618.jpg" class="img-fluid" width="500">
+            </div>
+        </div>
     </div>
-    <div class="box">
-      <h2 class="logo"><span>L</span>inks</h2>
-      <a href="#home">Beranda</a>
-      <a href="#about">Tentang</a>
-      <a href="#doctor">Dokter</a>
+</section>
+
+<section id="about" class="py-5 bg-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6"><img src="https://img.freepik.com/free-vector/medical-video-call-consultation-illustration_88138-415.jpg" class="img-fluid rounded-4"></div>
+            <div class="col-md-6">
+                <h6 class="text-primary fw-bold">TENTANG KAMI</h6>
+                <h2 class="fw-bold mb-3">Layanan Digital Modern</h2>
+                <p class="text-muted">HalloFii menyediakan sistem reservasi online yang memudahkan pasien memesan jadwal konsultasi tanpa antri.</p>
+                <ul class="list-unstyled"><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Akses 24 Jam</li><li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Dokter Spesialis</li></ul>
+            </div>
+        </div>
     </div>
-    <h1 class="credit">created by <span>kelompok 1</span> 2025</h1>
-  </section>
+</section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> 
-  <script src="script.js"></script>
+<section id="doctor" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5"><h2 class="fw-bold">Dokter Kami</h2></div>
+        <div class="row g-4">
+            <?php while ($d = mysqli_fetch_assoc($dokterQuery)) { ?>
+            <div class="col-md-4">
+                <div class="feature-box text-center p-4">
+                    <?php if ($d['foto_dokter']) { ?>
+                        <img src="data:image/jpeg;base64,<?= base64_encode($d['foto_dokter']); ?>" class="doctor-img shadow">
+                    <?php } else { ?>
+                        <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" class="doctor-img shadow">
+                    <?php } ?>
+                    <h5 class="fw-bold mt-3"><?= $d['nama_dokter']; ?></h5>
+                    <p class="text-primary small fw-bold"><?= $d['spesialisasi']; ?></p>
+                    <a href="login.php" class="btn btn-outline-primary btn-sm rounded-pill mt-2">Buat Janji</a>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+    </div>
+</section>
 
+<footer>
+    <div class="container text-center">
+        <p class="mb-0 small">&copy; 2025 HalloFii. All Rights Reserved.</p>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

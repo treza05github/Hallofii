@@ -2,14 +2,40 @@
 session_start();
 include "koneksi.php";
 
-// Proteksi: hanya admin
+// 1. CEK LOGIN ADMIN
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== "admin") {
     header("Location: login.php");
     exit;
 }
 
 $username = $_SESSION['username'];
+$alertMsg = "";
+$alertType = "";
 
+// 2. PROSES UPDATE
+if (isset($_POST['update'])) {
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    $no_telpon = mysqli_real_escape_string($koneksi, $_POST['no_telpon']);
+    $password = $_POST['password'];
+
+    // Cek apakah password diisi
+    if (!empty($password)) {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $query = "UPDATE pengguna SET email='$email', no_telpon='$no_telpon', password='$hash' WHERE username='$username'";
+    } else {
+        $query = "UPDATE pengguna SET email='$email', no_telpon='$no_telpon' WHERE username='$username'";
+    }
+
+    if (mysqli_query($koneksi, $query)) {
+        $alertType = "success";
+        $alertMsg = "Profil admin berhasil diperbarui!";
+    } else {
+        $alertType = "error";
+        $alertMsg = "Gagal memperbarui profil.";
+    }
+}
+
+// 3. AMBIL DATA ADMIN
 $query = mysqli_query($koneksi, "SELECT * FROM pengguna WHERE username='$username'");
 $data = mysqli_fetch_assoc($query);
 ?>
@@ -18,153 +44,133 @@ $data = mysqli_fetch_assoc($query);
 <html lang="id">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ubah Profil Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ubah Profil Admin</title>
 
-<!-- Ikon Bootstrap -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+        }
 
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
+        .navbar-custom {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            padding: 15px 0;
+        }
 
-    .navbar {
-        width: 100%;
-        background: #648db5;
-        padding: 15px 25px;
-        color: white;
-        font-weight: bold;
-        letter-spacing: 1px;
-    }
+        .card-form {
+            border: none;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
 
-    .wrapper {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-    }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
 
-    .profile-box {
-        width: 90%;
-        max-width: 450px;
-        background: #74a2d6;
-        padding: 30px;
-        border-radius: 12px;
-    }
+        .btn-confirm {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            border: none;
+            border-radius: 50px;
+            padding: 12px 40px;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: 0.3s;
+        }
 
-    .back a {
-        color: white;
-        font-weight: bold;
-        text-decoration: none;
-    }
+        .btn-confirm:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
 
-    .profile-image { text-align: center; margin-bottom: 20px; }
-
-    .profile-image img {
-        width: 140px;
-    }
-
-    .form-group { color: white; font-weight: bold; margin-bottom: 12px; }
-
-    .form-group input {
-        width: 100%;
-        padding: 12px;
-        border-radius: 8px;
-        border: none;
-        background: #dcdcdc;
-        margin-bottom: 10px;
-    }
-
-    .button-group { display: flex; gap: 12px; margin-top: 20px; }
-
-    .btn {
-        padding: 12px;
-        border-radius: 8px;
-        border: none;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        flex: 1;
-        text-align: center;
-        text-decoration: none;
-    }
-
-    .save-btn { background: #2f9e44; }
-    .back-btn { background: #b07b7a; }
-</style>
+        .admin-photo {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-left: 10px;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="navbar">UBAH PROFIL ADMIN</div>
-
-<div class="wrapper">
-
-    <div class="profile-box">
-
-        <div class="back">
-            <a href="adminprofil.php"><i class="bi bi-arrow-left-square-fill"></i> Kembali</a>
+    <nav class="navbar navbar-custom navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-gear-fill me-2"></i> EDIT ADMIN</a>
+            <div class="d-flex align-items-center">
+                <span class="text-white small fw-bold">Halo, ADMIN</span>
+                <img src="profil.png" class="admin-photo">
+            </div>
         </div>
+    </nav>
 
-        <div class="profile-image">
-            <img src="profil.png">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="mt-4 mb-2">
+                    <a href="adminprofil.php" class="text-decoration-none text-secondary fw-bold"><i class="bi bi-arrow-left"></i> Kembali</a>
+                </div>
+
+                <div class="card-form">
+                    <h3 class="fw-bold text-center mb-4" style="color: #0f4c75;">Update Data Admin</h3>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Username</label>
+                            <input type="text" class="form-control bg-light" value="<?= $data['username']; ?>" readonly>
+                            <small class="text-muted">Username admin tidak dapat diubah.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">Email</label>
+                            <input type="email" name="email" class="form-control" value="<?= $data['email']; ?>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold mb-1">No Telpon</label>
+                            <input type="text" name="no_telpon" class="form-control" value="<?= $data['no_telpon']; ?>" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold mb-1 text-danger">Password Baru</label>
+                            <input type="password" name="password" class="form-control" placeholder="Biarkan kosong jika tidak diganti">
+                        </div>
+
+                        <button type="submit" name="update" class="btn-confirm">Simpan Perubahan</button>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <form method="POST">
-
-            <div class="form-group">Username (tidak bisa diubah)
-                <input type="text" value="<?php echo $data['username']; ?>" readonly>
-            </div>
-
-            <div class="form-group">Email
-                <input type="text" name="email" value="<?php echo $data['email']; ?>" required>
-            </div>
-
-            <div class="form-group">No Telpon
-                <input type="text" name="no_telpon" value="<?php echo $data['no_telpon']; ?>" required>
-            </div>
-
-            <div class="form-group">Password Baru (opsional)
-                <input type="password" name="password" placeholder="Isi jika ingin ganti password">
-            </div>
-
-            <div class="button-group">
-                <button type="submit" name="update" class="btn save-btn">Simpan Perubahan</button>
-            </div>
-
-        </form>
-
     </div>
 
-</div>
+    <script>
+        <?php if ($alertMsg != "") { ?>
+            Swal.fire({
+                title: '<?= ($alertType == "success") ? "Berhasil!" : "Gagal!" ?>',
+                text: '<?= $alertMsg ?>',
+                icon: '<?= $alertType ?>',
+                confirmButtonColor: '#0f4c75'
+            }).then(() => {
+                <?php if ($alertType == "success") { ?>
+                    window.location = 'adminprofil.php';
+                <?php } ?>
+            });
+        <?php } ?>
+    </script>
 
 </body>
+
 </html>
-
-<?php
-if (isset($_POST['update'])) {
-
-    $email = $_POST['email'];
-    $no_telpon = $_POST['no_telpon'];
-    $password = $_POST['password'];
-
-    if ($password == "") {
-        $update = mysqli_query($koneksi, 
-            "UPDATE pengguna SET email='$email', no_telpon='$no_telpon' WHERE username='$username'");
-    } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $update = mysqli_query($koneksi, 
-            "UPDATE pengguna SET email='$email', no_telpon='$no_telpon', password='$hash' WHERE username='$username'");
-    }
-
-    echo "<script>alert('Profil berhasil diperbarui!');window.location='adminprofil.php';</script>";
-}
-?>

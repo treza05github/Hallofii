@@ -8,17 +8,12 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-// Ambil username dari session
 $username = $_SESSION['username'];
-
-// Ambil data admin dari DB
 $query = mysqli_query($koneksi, "SELECT * FROM pengguna WHERE username = '$username'");
 $data = mysqli_fetch_assoc($query);
-
-// Simpan data ke variabel
 $username = $data['username'];
-// password hash tidak boleh ditampilkan, jadi kosongkan saat tampil
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -26,193 +21,113 @@ $username = $data['username'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Admin</title>
-
-        <!-- Ikon Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-        }
-
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
+            background: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
         }
 
-        /* NAVBAR */
-        .navbar {
-            width: 100%;
-            background: #648db5;
-            padding: 15px 25px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* CONTAINER PROFIL */
-        .wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
-            padding: 10px;
-        }
-
-        .profile-box {
-            width: 80%;
-            max-width: 400px;
-            background: #74a2d6;
-            padding: 30px;
-            border-radius: 12px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .back {
-            font-size: 18px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            display: inline-block;
-            width: auto;
-            z-index: 5;
-        }
-
-        .back:hover {
-            opacity: 0.7;
-        }
-
-        .back a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .profile-image {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .profile-image img {
-            width: 140px;
-            max-width: 100%;
-        }
-
-        /* FORM */
-        .form-group {
-            margin: 12px 0;
-            color: white;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
+        .profile-card {
             border: none;
-            outline: none;
-            background: #dcdcdc;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            background: white;
         }
 
-        /* BUTTON AREA */
-        .button-group {
-            display: flex;
-            justify-content: space-between;
+        .profile-header {
+            background: linear-gradient(135deg, #0f4c75, #3282b8);
+            height: 160px;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            margin-top: -75px;
+            background: white;
+        }
+
+        .btn-action {
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
             margin-top: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 12px 22px;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-width: 120px;
-            text-decoration: none;
-        }
-
-        .logout-btn {
-            background: #e03131;
-        }
-
-        .edit-btn {
-            background: #2f9e44;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: scale(1.03);
-            transition: 0.2s;
-        }
-
-
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            .profile-box {
-                padding: 20px;
-            }
-
-            .btn {
-                width: 100%;
-            }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div>PROFIL ADMIN</div>
-    </div>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
 
-    <!-- PROFILE BOX -->
-    <div class="wrapper">
-        <div class="profile-box">
+                <a href="admin.php" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold">
+                    <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+                </a>
 
-            <div class="back">
-                <a href="admin.php"><i class="bi bi-arrow-left-square-fill"></i> Kembali</a>
+                <div class="card profile-card">
+                    <div class="profile-header"></div>
+                    <div class="card-body text-center pt-0 pb-5">
+                        <img src="profil.png" class="profile-avatar shadow-sm">
+                        <h3 class="fw-bold mt-3 mb-1"><?= strtoupper($username) ?></h3>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">Administrator</span>
+
+                        <div class="info-box text-start">
+                            <small class="text-muted fw-bold d-block mb-1">USERNAME</small>
+                            <span class="fs-5 text-dark"><?= $username ?></span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <a href="adminupdateprofil.php" class="btn btn-success btn-action">
+                                <i class="bi bi-pencil-square me-2"></i> Edit Profil
+                            </a>
+                            <a href="logout.php" class="btn logout-btn" onclick="konfirmasiLogout(event)">
+                                Logout <i class="bi bi-box-arrow-right"></i>
+                            </a>
+
+                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                            <script>
+                                function konfirmasiLogout(event) {
+                                    event.preventDefault(); // Cegah pindah halaman langsung
+                                    const link = event.currentTarget.getAttribute('href'); // Ambil link logout.php
+
+                                    Swal.fire({
+                                        title: 'Yakin ingin keluar?',
+                                        text: "Sesi Anda akan diakhiri.",
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#e03131', 
+                                        cancelButtonColor: '#888',
+                                        confirmButtonText: 'Ya, Keluar',
+                                        cancelButtonText: 'Batal'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            // Jika user klik Ya, arahkan ke logout.php
+                                            window.location.href = link;
+                                        }
+                                    });
+                                }
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-
-            <div class="profile-image">
-                <img src="profil.png">
-            </div>
-
-            <!-- FORM TAMPIL -->
-            <div class="form-group">
-                Username
-                <input type="text" value="<?php echo $username; ?>" readonly>
-            </div>
-
-            <div class="button-group">
-
-                <a href="logout.php" class="btn logout-btn">Logout <i class="bi bi-box-arrow-right"></i></a>
-
-                <a href="adminupdateprofil.php" class="btn edit-btn">Ubah Profil <i class="bi bi-pencil-square edit"></i></a>
-
-            </div>
-
         </div>
     </div>
 
