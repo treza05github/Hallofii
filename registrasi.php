@@ -61,7 +61,7 @@ if (isset($_POST['registrasi'])) {
             // 4. PROSES SIMPAN (Hash Password)
             $password_hash = password_hash($password_raw, PASSWORD_DEFAULT);
             
-            $query = "INSERT INTO pengguna (username, email, no_telpon, password)
+            $query = "INSERT INTO pengguna (username, email, no_telpon, password, role)
                       VALUES ('$username', '$email', '$no_telpon', '$password_hash', 'pasien')";
             
             if (mysqli_query($koneksi, $query)) {

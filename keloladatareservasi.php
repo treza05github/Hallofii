@@ -30,6 +30,7 @@ function tgl_indo($tanggal)
 }
 // --------------------------------
 
+// Pagination & Search
 $limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page - 1) * $limit;
@@ -37,10 +38,12 @@ $search = isset($_GET['search']) ? mysqli_real_escape_string($koneksi, $_GET['se
 
 $filter = ($search != "") ? "AND (p.username LIKE '%$search%' OR d.nama_dokter LIKE '%$search%')" : "";
 
+// Hitung Total Data
 $totalQ = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM reservasi r JOIN pengguna p ON r.id_pengguna=p.id_pengguna JOIN dokter d ON r.dokter_id=d.dokter_id WHERE 1 $filter");
 $totalData = mysqli_fetch_assoc($totalQ)['total'];
 $totalPage = ceil($totalData / $limit);
 
+// Query Data
 $query = mysqli_query($koneksi, "
     SELECT r.*, p.username, p.no_telpon, d.nama_dokter, d.spesialisasi 
     FROM reservasi r 
@@ -123,10 +126,17 @@ $query = mysqli_query($koneksi, "
                 <a href="admin.php" class="text-decoration-none text-muted mb-1 d-block small fw-bold"><i class="bi bi-arrow-left"></i> Dashboard</a>
                 <h3 class="fw-bold" style="color: #0f4c75;">Daftar Reservasi</h3>
             </div>
-            <form method="GET" class="d-flex">
-                <input type="text" name="search" class="form-control rounded-pill me-2 border-0 shadow-sm" placeholder="Cari pasien/dokter..." value="<?= htmlspecialchars($search) ?>">
-                <button class="btn btn-primary rounded-circle shadow-sm" style="background-color: #0f4c75; border:none;"><i class="bi bi-search"></i></button>
-            </form>
+
+            <div class="d-flex gap-2">
+                <a href="keloladatareservasihapusbatal.php" onclick="konfirmasiBersihkan(event)" class="btn btn-outline-danger rounded-pill shadow-sm">
+                    <i class="bi bi-trash"></i> Bersihkan Reservasi Batal
+                </a>
+
+                <form method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control rounded-pill me-2 border-0 shadow-sm" placeholder="Cari pasien/dokter..." value="<?= htmlspecialchars($search) ?>">
+                    <button class="btn btn-primary rounded-circle shadow-sm" style="background-color: #0f4c75; border:none;"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
         </div>
 
         <div class="card card-table p-4 bg-white">
@@ -187,6 +197,12 @@ $query = mysqli_query($koneksi, "
                                 </td>
                             </tr>
                         <?php } ?>
+
+                        <?php if (mysqli_num_rows($query) == 0): ?>
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -221,6 +237,25 @@ $query = mysqli_query($koneksi, "
                 confirmButtonText: 'Ya, Hapus'
             }).then((result) => {
                 if (result.isConfirmed) window.location.href = link;
+            });
+        }
+
+        // KONFIRMASI BERSIHKAN DATA
+        function konfirmasiBersihkan(event) {
+            event.preventDefault();
+            const link = event.currentTarget.getAttribute('href');
+            Swal.fire({
+                title: 'Bersihkan Database?',
+                text: "SEMUA data dengan status 'BATAL' akan dihapus permanen dari sistem!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Bersihkan Semua'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = link;
+                }
             });
         }
     </script>

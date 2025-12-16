@@ -7,6 +7,7 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
+// --- FUNGSI FORMAT TANGGAL INDONESIA ---
 function tgl_indo($tanggal){
     $bulan = array (
         1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -14,8 +15,10 @@ function tgl_indo($tanggal){
     );
     $pecahkan = explode('-', date('Y-m-d', strtotime($tanggal)));
     
+    // $pecahkan[0] = tahun, [1] = bulan, [2] = tanggal
     return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
 }
+// ----------------------------------------
 
 $id_pengguna = $_SESSION['id_pengguna'];
 $limit = 5;
@@ -64,8 +67,14 @@ $query = mysqli_query($koneksi, "SELECT r.*, d.nama_dokter, d.spesialisasi FROM 
                 <a href="pasien.php" class="text-decoration-none text-muted mb-1 d-block small"><i class="bi bi-arrow-left"></i> Dashboard</a>
                 <h3 class="fw-bold">Reservasi Saya</h3>
             </div>
+            
             <div class="d-flex gap-2">
+                <a href="reservasihapusbatal.php" onclick="konfirmasiBersihkan(event)" class="btn btn-outline-danger rounded-pill">
+                    <i class="bi bi-trash"></i> Bersihkan Reservasi Batal
+                </a>
+
                 <a href="reservasiform.php" class="btn btn-primary rounded-pill"><i class="bi bi-plus-lg"></i> Buat Baru</a>
+                
                 <form method="GET" class="d-flex">
                     <input type="text" name="search" class="form-control rounded-pill me-2" placeholder="Cari..." value="<?= htmlspecialchars($keyword) ?>">
                     <button class="btn btn-secondary rounded-circle"><i class="bi bi-search"></i></button>
@@ -109,6 +118,9 @@ $query = mysqli_query($koneksi, "SELECT r.*, d.nama_dokter, d.spesialisasi FROM 
                                 <td>
                                     <?php if ($row['status'] == "menunggu dikonfirmasi") { ?>
                                         <span class="badge badge-soft-warning px-3 py-2 rounded-pill">Menunggu</span>
+                                        <div class="small text-muted mt-2 fst-italic" style="font-size: 11px; line-height: 1.2;">
+                                            Silakan cek kembali status<br>reservasi nanti atau hubungi admin (082243054197) jika ada masalah.
+                                        </div>
                                     <?php } elseif ($row['status'] == "reservasi berhasil") { ?>
                                         <span class="badge badge-soft-success px-3 py-2 rounded-pill">Disetujui</span>
                                         <div class="small text-muted mt-2 fst-italic" style="font-size: 11px; line-height: 1.2;">
@@ -133,6 +145,10 @@ $query = mysqli_query($koneksi, "SELECT r.*, d.nama_dokter, d.spesialisasi FROM 
                                 </td>
                             </tr>
                         <?php } ?>
+                        
+                        <?php if (mysqli_num_rows($query) == 0) { ?>
+                            <tr><td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat reservasi.</td></tr>
+                        <?php } ?>
                     </tbody>
                 </table>
             </div>
@@ -148,6 +164,7 @@ $query = mysqli_query($koneksi, "SELECT r.*, d.nama_dokter, d.spesialisasi FROM 
     </div>
 
     <script>
+        // Konfirmasi Batalkan SATU data
         function konfirmasiBatal(event) {
             event.preventDefault();
             const link = event.currentTarget.getAttribute('href');
@@ -157,8 +174,27 @@ $query = mysqli_query($koneksi, "SELECT r.*, d.nama_dokter, d.spesialisasi FROM 
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Ya, Batalkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = link;
+                }
+            });
+        }
+
+        // Konfirmasi Bersihkan SEMUA data batal
+        function konfirmasiBersihkan(event) {
+            event.preventDefault();
+            const link = event.currentTarget.getAttribute('href');
+            Swal.fire({
+                title: 'Bersihkan Riwayat?',
+                text: "Semua data reservasi yang berstatus 'BATAL' akan dihapus permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Bersihkan'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = link;
