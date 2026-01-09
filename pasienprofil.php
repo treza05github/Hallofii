@@ -2,231 +2,151 @@
 session_start();
 include "koneksi.php";
 
-// CEK LOGIN
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
     exit;
 }
 
-// Ambil username dari session
 $usernameSession = $_SESSION['username'];
-
-// Ambil data user berdasarkan session
 $query = mysqli_query($koneksi, "SELECT * FROM pengguna WHERE username = '$usernameSession'");
 $data = mysqli_fetch_assoc($query);
 
-// Masukkan ke variabel
 $username  = $data['username'];
 $email     = $data['email'];
 $no_telpon = $data['no_telpon'];
-$password  = $data['password'];
-
-// password hash tidak boleh ditampilkan, jadi kosongkan saat tampil
 ?>
-
 
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Pasien</title>
-
-    <!-- Ikon Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-        }
-
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
+            background: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
         }
 
-        /* NAVBAR */
-        .navbar {
-            width: 100%;
-            background: #648db5;
-            padding: 15px 25px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* CONTAINER PROFIL */
-        .wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
-            padding: 10px;
-        }
-
-        .profile-box {
-            width: 80%;
-            max-width: 400px;
-            background: #74a2d6;
-            padding: 30px;
-            border-radius: 12px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .back {
-            font-size: 18px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            display: inline-block;
-            width: auto;
-            z-index: 5;
-        }
-
-        .back:hover {
-            opacity: 0.7;
-        }
-
-        .back a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .profile-image {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .profile-image img {
-            width: 140px;
-            max-width: 100%;
-        }
-
-        /* FORM */
-        .form-group {
-            margin: 12px 0;
-            color: white;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
+        .profile-card {
             border: none;
-            outline: none;
-            background: #dcdcdc;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            background: white;
         }
 
-        /* BUTTON AREA */
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
+        .profile-header {
+            background: linear-gradient(135deg, #0d6efd, #6610f2);
+            height: 160px;
         }
 
-        .btn {
-            padding: 12px 22px;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-width: 120px;
-            text-decoration: none;
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            margin-top: -75px;
+            background: white;
         }
 
-        .logout-btn {
-            background: #e03131;
+        .info-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
         }
 
-        .edit-btn {
-            background: #2f9e44;
+        .info-item:last-child {
+            border-bottom: none;
         }
 
-        .btn:hover {
-            opacity: 0.9;
-            transform: scale(1.03);
-            transition: 0.2s;
+        .label-text {
+            font-size: 0.85rem;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            .profile-box {
-                padding: 20px;
-            }
-
-            .btn {
-                width: 100%;
-            }
+        .value-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div>PROFIL PASIEN</div>
-    </div>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
 
-    <!-- PROFILE BOX -->
-    <div class="wrapper">
-        <div class="profile-box">
+                <a href="pasien.php" class="text-decoration-none text-muted mb-3 d-inline-block fw-bold">
+                    <i class="bi bi-arrow-left"></i> Dashboard Pasien
+                </a>
 
-            <div class="back">
-                <a href="pasien.php"><i class="bi bi-arrow-left-square-fill"></i> Kembali</a>
+                <div class="card profile-card">
+                    <div class="profile-header"></div>
+                    <div class="card-body text-center pt-0 pb-4">
+                        <img src="profil.png" class="profile-avatar shadow-sm">
+                        <h3 class="fw-bold mt-3 mb-1"><?= strtoupper($username) ?></h3>
+                        <p class="text-muted">Member Pasien</p>
+
+                        <div class="text-start px-3 mt-4">
+                            <div class="info-item">
+                                <div class="label-text">Email</div>
+                                <div class="value-text"><?= $email ?></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="label-text">Nomor Telepon</div>
+                                <div class="value-text"><?= $no_telpon ?></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mt-4 px-3">
+                            <div class="col-6">
+                                <a href="pasienupdateprofil.php" class="btn btn-primary w-100 rounded-pill fw-bold">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a href="logout.php" class="btn logout-btn" onclick="konfirmasiLogout(event)">
+                                    Logout <i class="bi bi-box-arrow-right"></i>
+                                </a>
+
+                                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                <script>
+                                    function konfirmasiLogout(event) {
+                                        event.preventDefault(); // Cegah pindah halaman langsung
+                                        const link = event.currentTarget.getAttribute('href'); // Ambil link logout.php
+
+                                        Swal.fire({
+                                            title: 'Yakin ingin keluar?',
+                                            text: "Sesi Anda akan diakhiri.",
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#e03131', // Warna merah untuk logout
+                                            cancelButtonColor: '#888',
+                                            confirmButtonText: 'Ya, Keluar',
+                                            cancelButtonText: 'Batal'
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
+                                                // Jika user klik Ya, arahkan ke logout.php
+                                                window.location.href = link;
+                                            }
+                                        });
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-
-            <div class="profile-image">
-                <img src="profil.png">
-            </div>
-
-            <!-- FORM TAMPIL -->
-            <div class="form-group">
-                Username
-                <input type="text" value="<?php echo $username; ?>" readonly>
-                Email
-                <input type="text" value="<?php echo $email; ?>" readonly>
-                Nomor Telpon
-                <input type="text" value="<?php echo $no_telpon; ?>" readonly>
-                Password
-                <input type="text" value="<?php echo $password; ?>" readonly>
-            </div>
-
-            <div class="button-group">
-
-                <!-- LOGOUT -->
-                <a href="logout.php" class="btn logout-btn">Logout <i class="bi bi-box-arrow-right"></i></a>
-
-                <!-- UBAH PROFIL -->
-                <a href="pasienupdateprofil.php" class="btn edit-btn">Ubah Profil <i class="bi bi-pencil-square edit"></i></a>
-
-            </div>
-
         </div>
     </div>
 

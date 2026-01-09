@@ -2,14 +2,18 @@
 session_start();
 include "koneksi.php";
 
+// Cek Login Admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] != "admin") {
     header("Location: login.php");
     exit;
 }
 
-$id = $_GET['id'];
-$query = mysqli_query($koneksi, "DELETE FROM reservasi WHERE reservasi_id='$id'");
+// QUERY HAPUS SEMUA DATA STATUS 'BATAL'
+$query = mysqli_query($koneksi, "DELETE FROM reservasi WHERE status = 'reservasi dibatalkan'");
+$jumlah_terhapus = mysqli_affected_rows($koneksi);
+
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,10 +22,10 @@ $query = mysqli_query($koneksi, "DELETE FROM reservasi WHERE reservasi_id='$id'"
 </head>
 <body>
 <script>
-    <?php if ($query) { ?>
+    <?php if ($jumlah_terhapus > 0) { ?>
         Swal.fire({
-            title: 'Berhasil!',
-            text: 'Data reservasi telah dihapus.',
+            title: 'Pembersihan Selesai!',
+            text: '<?= $jumlah_terhapus ?> data sampah (batal) berhasil dihapus permanen.',
             icon: 'success',
             confirmButtonColor: '#3085d6'
         }).then(() => {
@@ -29,9 +33,10 @@ $query = mysqli_query($koneksi, "DELETE FROM reservasi WHERE reservasi_id='$id'"
         });
     <?php } else { ?>
         Swal.fire({
-            title: 'Gagal!',
-            text: 'Terjadi kesalahan saat menghapus data.',
-            icon: 'error'
+            title: 'Bersih!',
+            text: 'Tidak ada data batal yang perlu dihapus.',
+            icon: 'info',
+            confirmButtonColor: '#3085d6'
         }).then(() => {
             window.location = 'keloladatareservasi.php';
         });

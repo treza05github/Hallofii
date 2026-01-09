@@ -2,114 +2,114 @@
 session_start();
 include "koneksi.php";
 
-// CEK ROLE ADMIN
-if (!isset($_SESSION['role']) || $_SESSION['role'] != "admin") {
-    header("Location: login.php");
-    exit;
-}
+if (!isset($_SESSION['role']) || $_SESSION['role'] != "admin") { header("Location: login.php"); exit; }
 
-// QUERY SEMUA RESERVASI
+// Query Data (Urutkan dari yang terbaru)
 $query = mysqli_query($koneksi, "
-    SELECT r.*, p.username, p.no_telpon, d.nama_dokter, d.spesialisasi
+    SELECT r.*, p.username, d.nama_dokter, d.spesialisasi
     FROM reservasi r
     JOIN pengguna p ON r.id_pengguna = p.id_pengguna
     JOIN dokter d ON r.dokter_id = d.dokter_id
     ORDER BY r.reservasi_id DESC
 ");
+
+$total_pendapatan = 0;
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Laporan Reservasi - HalloFii</title>
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <title>Laporan Reservasi & Keuangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .title {
-            text-align: center;
-            margin-bottom: 20px;
+        body { font-family: 'Poppins', sans-serif; font-size: 12px; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f2f2f2; font-weight: bold; }
+        .status-success { color: green; font-weight: bold; }
+        .status-cancel { color: red; font-style: italic; }
+        .text-right { text-align: right; }
+        .total-row { background-color: #e8f5e9; font-weight: bold; font-size: 14px; }
+        
+        @media print { .no-print { display: none; } }
+        
+        .btn-print { 
+            background: #0f4c75; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; 
+            font-weight: bold; display: inline-block; margin-bottom: 20px;
         }
-        .title h2 { font-weight: bold; }
-        .header-info {
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        @media print {
-            .no-print { display: none; }
-            body { padding: 0; }
-        }
-        table {
-            font-size: 14px;
+        .btn-back { 
+            background: #0e8fe6ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; 
+            font-weight: bold; display: inline-block; margin-bottom: 20px; 
         }
     </style>
-
 </head>
 <body>
 
-<div class="title">
-    <h2>LAPORAN DATA RESERVASI</h2>
-    <h4>KLINIK HalloFii</h4>
-</div>
+    <div class="no-print text-center">
+        <button onclick="window.print()" class="btn-print">Cetak Laporan (PDF)</button>
+        <button class="btn-back"><a href="keloladatareservasi.php" style="text-decoration: none; color: white;"> Kembali</a></button>
+    </div>
 
-<div class="header-info">
-    Dicetak oleh: <b><?= $_SESSION['username']; ?></b><br>
-    Tanggal: <?= date("d-m-Y H:i:s"); ?>
-</div>
+    <div class="header">
+        <h2 style="margin:0;">HALLOFII KLINIK</h2>
+        <p style="margin:5px 0;">Laporan Reservasi & Pendapatan</p>
+        <small>Dicetak Tanggal: <?= date('d F Y'); ?></small>
+    </div>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr class="table-secondary text-center">
-            <th>No</th>
-            <th>Nama Pasien</th>
-            <th>No Telpon</th>
-            <th>Dokter</th>
-            <th>Layanan & Spesialisasi</th>
-            <th>Tanggal & Waktu</th>
-            <th>Status</th>
-        </tr>
-    </thead>
+    <table class="table">
+        <thead>
+            <tr>
+                <th width="5%">No</th>
+                <th>Tanggal</th>
+                <th>Pasien</th>
+                <th>Dokter</th>
+                <th>Layanan</th>
+                <th>Status</th>
+                <th class="text-right">Biaya (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            $no = 1; 
+            while($row = mysqli_fetch_assoc($query)) { 
+                // Hitung total hanya jika status Berhasil
+                if ($row['status'] == 'reservasi berhasil') {
+                    $total_pendapatan += $row['total_biaya'];
+                }
+            ?>
+            <tr>
+                <td><?= $no++; ?></td>
+                <td><?= date('d/m/Y', strtotime($row['tanggal_waktu'])); ?></td>
+                <td><?= $row['username']; ?></td>
+                <td><?= $row['nama_dokter']; ?></td>
+                <td><?= $row['layanan_spesialis']; ?></td>
+                <td>
+                    <?php if ($row['status'] == 'reservasi berhasil') { ?>
+                        <span class="status-success">Berhasil</span>
+                    <?php } elseif ($row['status'] == 'reservasi dibatalkan') { ?>
+                        <span class="status-cancel">Batal</span>
+                    <?php } else { ?>
+                        <span>Menunggu</span>
+                    <?php } ?>
+                </td>
+                <td class="text-right"><?= number_format($row['total_biaya'], 0, ',', '.'); ?></td>
+            </tr>
+            <?php } ?>
+            
+            <tr class="total-row">
+                <td colspan="6" class="text-right">TOTAL PENDAPATAN (Reservasi Berhasil)</td>
+                <td class="text-right">Rp <?= number_format($total_pendapatan, 0, ',', '.'); ?></td>
+            </tr>
+        </tbody>
+    </table>
 
-    <tbody>
-    <?php 
-    $no = 1;
-    while ($row = mysqli_fetch_assoc($query)) { 
-    ?>
-        <tr>
-            <td class="text-center"><?= $no++; ?></td>
-            <td><?= $row['username']; ?></td>
-            <td><?= $row['no_telpon']; ?></td>
-            <td><?= $row['nama_dokter']; ?> (<?= $row['spesialisasi']; ?>)</td>
-            <td><?= $row['layanan_spesialis']; ?></td>
-            <td><?= $row['tanggal_waktu']; ?></td>
-            <td>
-                <?php if ($row['status'] == "menunggu dikonfirmasi") { ?>
-                    <span class="badge bg-warning text-dark">Menunggu</span>
-                <?php } elseif ($row['status'] == "reservasi berhasil") { ?>
-                    <span class="badge bg-success">Berhasil</span>
-                <?php } else { ?>
-                    <span class="badge bg-danger">Dibatalkan</span>
-                <?php } ?>
-            </td>
-        </tr>
-    <?php } ?>
-    </tbody>
-</table>
-
-<!-- TOMBOL BACK -->
-<div class="text-center mt-4 no-print">
-    <a href="keloladatareservasi.php" class="btn btn-secondary">Kembali</a>
-    <button onclick="window.print()" class="btn btn-primary">Print</button>
-</div>
-
-<!-- AUTO PRINT SAAT HALAMAN DIBUKA -->
-<script>
-    window.onload = () => {
-        window.print();
-    }
-</script>
+    <div style="margin-top: 40px; float: right; text-align: center; width: 200px;">
+        <p>Jambi, <?= date("d F Y"); ?></p>
+        <br><br><br>
+        <p><b>Administrator</b></p>
+    </div>
 
 </body>
 </html>

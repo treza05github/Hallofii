@@ -2,41 +2,56 @@
 session_start();
 include "koneksi.php";
 
-// CEK LOGIN ADMIN
-if (!isset($_SESSION['username']) || $_SESSION['username'] !== "admin") {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== "admin") {
     header("Location: login.php");
     exit;
 }
 
-// CEK APAKAH ADA ID YANG DIKIRIM
-if (!isset($_GET['id'])) {
-    echo "<script>alert('ID pasien tidak ditemukan!'); window.location='keloladatapasien.php';</script>";
-    exit;
-}
-
 $id = $_GET['id'];
-
-// CEK DATA PASIEN TERDAFTAR
 $cek = mysqli_query($koneksi, "SELECT * FROM pengguna WHERE id_pengguna='$id'");
 $data = mysqli_fetch_assoc($cek);
+$berhasil = false;
+$msg = "";
 
 if (!$data) {
-    echo "<script>alert('Data tidak ditemukan!'); window.location='kelolapasien.php';</script>";
-    exit;
-}
-
-// CEGAH ADMIN DIHAPUS
-if (strtolower($data['username']) == "admin") {
-    echo "<script>alert('Akun admin tidak boleh dihapus!'); window.location='keloladatapasien.php';</script>";
-    exit;
-}
-
-// HAPUS PASIEN (username selain admin)
-$query = mysqli_query($koneksi, "DELETE FROM pengguna WHERE id_pengguna='$id'");
-
-if ($query) {
-    echo "<script>alert('Data pasien berhasil dihapus!'); window.location='keloladatapasien.php';</script>";
+    $msg = "Data pasien tidak ditemukan!";
+} elseif (strtolower($data['username']) == "admin") {
+    $msg = "Akun admin utama tidak boleh dihapus!";
 } else {
-    echo "<script>alert('Gagal menghapus pasien!'); window.location='keloladatapasien.php';</script>";
+    $query = mysqli_query($koneksi, "DELETE FROM pengguna WHERE id_pengguna='$id'");
+    if ($query) {
+        $berhasil = true;
+    } else {
+        $msg = "Gagal menghapus data dari database.";
+    }
 }
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>body{font-family:'Poppins', sans-serif; background:#f3f4f6;}</style>
+</head>
+<body>
+<script>
+    <?php if ($berhasil) { ?>
+        Swal.fire({
+            title: 'Berhasil!',
+            text: 'Data pasien berhasil dihapus.',
+            icon: 'success',
+            confirmButtonColor: '#3085d6'
+        }).then(() => {
+            window.location = 'keloladatapasien.php';
+        });
+    <?php } else { ?>
+        Swal.fire({
+            title: 'Gagal!',
+            text: '<?= $msg; ?>',
+            icon: 'error'
+        }).then(() => {
+            window.location = 'keloladatapasien.php';
+        });
+    <?php } ?>
+</script>
+</body>
+</html>
